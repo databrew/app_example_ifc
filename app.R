@@ -29,7 +29,12 @@ ui <- material_page(
         title = "",
         depth = 4,
         uiOutput('questions_ui'),
-        br()
+        br(),
+          width = 3,
+          material_card(
+            depth = 4,
+            plotOutput('progress_plot')
+          )
         )),
     material_column(
       width = 5,
@@ -62,7 +67,8 @@ ui <- material_page(
                       )
                     )
     )
-  )    
+  )
+    
 )
 
 server <- function(input, output) {
@@ -198,8 +204,14 @@ server <- function(input, output) {
       total <- length(tracer_survey_questions)
       remaining <- total - done
       pd <- data.frame(done, total, remaining)
-      pd <- gather(pd, key, value, done:remaining)
-      ggplot(pd, aes(key, value)) + geom_bar(stat = 'identity')
+      percent_done <- round((done/total)*100, 2)
+      names(pd) <- c('Finished', 'Total questions','Remaining questions')
+      pd <- gather(pd, key, value, Finished:`Remaining questions`)
+      ggplot(pd, aes(key, value)) + 
+        geom_bar(stat = 'identity', fill = 'black', color = 'blue', alpha = 0.4) +
+        labs(x = '',
+             y = '',
+             title = paste0(percent_done, '% finished'))
     }
   })
   
