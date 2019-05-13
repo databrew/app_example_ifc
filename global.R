@@ -26,3 +26,5 @@ activity - provide information on the objective, who the main beneficiaries were
 'dd/mm/yy', '# total targeted respondants', '# total actual respondents', 'for customized and open-enrollment trainings', 'for customized and open-enrollment trainings',
 'for customized trainings only', 'for customized trainings only', 'for customized trainings only', 'for customized trainings only', 'for customized trainings only', 
 'for customized trainings only', 'for techinical assistance/adivsory', 'for techinical assistance/adivsory', 'for techinical assistance/adivsory', 'for techinical assistance/adivsory' )
+
+dropdown_choices <- c(5, 6, 7, 10, 11, 12, 13)
