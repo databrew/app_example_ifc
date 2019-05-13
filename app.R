@@ -24,13 +24,12 @@ ui <- material_page(
   
   material_row(
     material_column(
-      width = 3,
+      width = 5,
       material_card(
         title = "",
         depth = 4,
         uiOutput('questions_ui'),
         br(),
-          width = 3,
           material_card(
             depth = 4,
             plotOutput('progress_plot')
