@@ -36,6 +36,7 @@ ui <- material_page(
       textOutput('text_instructions'),
       br(),
       uiOutput('text_options'))),
+   
     material_column(width = 10,
                     # Define side-nav tab content
                     material_side_nav_tab_content(
