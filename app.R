@@ -32,12 +32,10 @@ ui <- material_page(
           label = "Choose survey question",
           choices = tracer_survey_questions,
           selected = tracer_survey_questions[1]
-        ))),
-    material_column(
-      width = 4,
-      material_card(title = '',
-                    depth = 4,
-                    textOutput('text_instructions'))),
+        ),
+      textOutput('text_instructions'),
+      br(),
+      uiOutput('text_options'))),
     material_column(width = 10,
                     # Define side-nav tab content
                     material_side_nav_tab_content(
@@ -73,8 +71,67 @@ ui <- material_page(
 
 server <- function(input, output) {
   
-  output$text_output <- renderText({
+  output$text_instructions <- renderText({
+   question <- input$questions
+   # question <- tracer_survey_questions[1]
+   
+   sub_number <- which(question == tracer_survey_questions)
+   
+   return(tracer_survey_sub[sub_number])
+  
+    
 
+  })
+  
+  output$text_options <- renderUI({
+    # questions 5,6,7,10,11,12,13
+    # 5 - individaul, organizational, enabling environment
+    # 6 - training, technical assistance, knowledge production, knowledge sharing
+    # 7 - training, technical assistance, knowledge production, knowledge sharing
+    # 10 - government, civil society groups/ngos, academia, research non academia, m&e netweorks, private sector, donor agencies, other CLEAR centers
+    # 11 - government, civil society groups/ngos, academia, research non academia, m&e netweorks, private sector, donor agencies, other CLEAR centers
+    # 12 - evaluators, users of evaluation research/policy makers, Commissioners or Managers of Evaluations, other
+    # 13 - executive level, managerial level, technical or professional
+    
+    question <- input$questions
+    # question <- tracer_survey_questions[1]
+    
+    sub_number <- which(question == tracer_survey_questions)
+    
+    if(sub_number %in% c(5, 6, 7, 10, 11, 12, 13)) {
+      
+    
+    if(sub_number == 5){
+      dropdown_choices <- c('Individual', 'Organizational', 
+                            'Enabling Environment')
+      
+    } 
+    if(sub_number %in% c(6, 7)){
+      dropdown_choices <- c('Training', 'Technical assistance', 
+                            'Knowledge production', 'Knowledge sharing')
+      
+    } 
+    if(sub_number %in% c(10, 11)){
+      dropdown_choices <- c('Government', 'Civil society groups/NGOs', 'Academia',
+                            'Research non-academia', 'M&E netweorks', 'Private sector', 
+                            'Donor agencies', 'Other CLEAR centers')
+      
+    } 
+    if(sub_number == 12){
+      dropdown_choices <- c('Evaluators', 'Users of evaluation research/policy makers', 'Commissioners or managers of evaluations', 'other')
+      
+      
+    }
+      
+      material_dropdown(input_id = 'dropdown', 
+                        label = '', 
+                        choices = dropdown_choices, 
+                        selected = dropdown_choices[1])
+    
+    } else {
+      material_text_box(input_id = 'direct_text', 
+                        label = '')
+    }
     
     
   })
