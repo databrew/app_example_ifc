@@ -267,13 +267,32 @@ server <- function(input, output) {
       fluidPage(
         fluidRow(
           column(12, align = 'center',
-                 material_button('write_excel',
+                 downloadButton('write_excel_data',
                                  label = 'Export below data to Excel'))
         )
       )} else {
        fluidPage() 
       }
     })
+  
+  # Observe the write excel button and write
+  output$write_excel_data <- downloadHandler(
+    filename = function() {
+      paste('data', ".xlsx", sep = "")
+    },
+    content = function(file) {
+      message('current values are')
+      df <- current_values$data
+      if(!is.null(df)){
+        if(nrow(df) > 0){
+          df <- df %>%
+            group_by(key) %>%
+            filter(time_stamp == max(time_stamp))
+          writexl::write_xlsx(df, file)
+        }
+      }
+    })
+  
 }
 
 
