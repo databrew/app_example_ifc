@@ -1,6 +1,7 @@
 library(shiny)
 library(shinymaterial)
 library(tidyverse)
+library(writexl)
 
 # overall help here: https://ericrayanderson.github.io/shinymaterial/
 # color universe here: http://materializecss.com/color.html
@@ -40,8 +41,13 @@ ui <- material_page(
       br(),br(),
       textOutput('text_instructions'),
       uiOutput('text_options'),
-      material_button(input_id = 'submit_button', 
-                      label = 'Submit'),
+      fluidRow(
+        column(6,
+               material_button(input_id = 'submit_button', 
+                               label = 'Submit')),
+        column(6)
+      ),
+      uiOutput('excel_ui'),
      DT::dataTableOutput('current_table')
     ),
     
@@ -61,7 +67,7 @@ ui <- material_page(
                       tags$a(
                         target = "_blank",
                         class = "btn orange",
-                        href = "databrew.cc",
+                        href = "http://databrew.cc",
                         "Visite our website!"
                       )
                     )
@@ -192,27 +198,83 @@ server <- function(input, output) {
   output$current_table <- DT::renderDataTable({
     df <- current_values$data
     if(!is.null(df)){
-      DT::datatable(df)
+      if(nrow(df) > 0){
+        # Keep only the most recent entry
+        df <- df %>%
+          group_by(key) %>%
+          filter(time_stamp == max(time_stamp))
+        DT::datatable(df)
+      }
     }
   })
   
   output$progress_plot <- renderPlot({
     df <- current_values$data
     if(!is.null(df)){
+      if(nrow(df) > 0){
+        # Keep only most recent values for each key
+        df <- df %>%
+          group_by(key) %>%
+          filter(time_stamp == max(time_stamp))
+      }
       done <- nrow(df)
       total <- length(tracer_survey_questions)
       remaining <- total - done
-      pd <- data.frame(done, total, remaining)
       percent_done <- round((done/total)*100, 2)
-      names(pd) <- c('Finished', 'Total questions','Remaining questions')
-      pd <- gather(pd, key, value, Finished:`Remaining questions`)
-      ggplot(pd, aes(key, value)) + 
-        geom_bar(stat = 'identity', fill = 'black', color = 'blue', alpha = 0.4) +
+      percent_remaining <- 100 - percent_done
+      pd <- data.frame(percent_done, percent_remaining)
+      pd <- gather(pd, key, value, percent_done:percent_remaining) %>% mutate(group = 1)
+      pd$key <- factor(pd$key,
+                       levels = c('percent_remaining',
+                                  'percent_done'),
+                       labels = c('Remaining',
+                                  'Finished'))
+      ggplot(pd, aes(group, value,
+                     fill = key)) + 
+        geom_bar(stat = 'identity') +
         labs(x = '',
-             y = '',
-             title = paste0(percent_done, '% finished'))
+             y = '') +
+        coord_flip() +
+        scale_fill_manual(name = '',
+                          values = rev(c('darkorange', 'blue'))) +
+        theme_minimal() +
+        theme(axis.text = element_text(size = 0),
+              legend.position = 'none') +
+        guides(fill = guide_legend(reverse=T)) +
+        geom_text(data = pd %>%
+                    dplyr::filter(key == 'Finished'),
+                           aes(label = paste0(value, '% finished'),
+                               y = ifelse(value < 40,
+                                          value + 20,
+                                          value - 20)),
+                  color = 'white',
+                  size = 6) +
+        theme(panel.grid = element_blank())
     }
-  })
+  },
+  height = 100)
   
+  output$excel_ui <- renderUI({
+    ok <- FALSE
+    df <- current_values$data
+    if(!is.null(df)){
+      if(nrow(df) > 0){
+        ok <- TRUE
+      }
+    }
+    
+    if(ok){
+      fluidPage(
+        fluidRow(
+          column(12, align = 'center',
+                 material_button('write_excel',
+                                 label = 'Export below data to Excel'))
+        )
+      )} else {
+       fluidPage() 
+      }
+    })
 }
+
+
 shinyApp(ui = ui, server = server)
